@@ -1,6 +1,2 @@
-build/
 node_modules/
-logs/
 .env
-package-lock.json
-keys/
