@@ -2,30 +2,23 @@ import mongoose, { model, Schema } from "mongoose";
 
 export interface IUser extends Document{
   fname: string;
-  mname?: string;
   lname: string;
   countryCode: string;
   phone: string;
-  isPhoneVerified: boolean;
   email: string;
   isEmailVerified: boolean;
+  password: string;
+  WAMobile: string;
   dob: Date;
   gender: 'male' | 'female';
   address?: [object];
   role: 'individual' | 'agent';
-  tempPhone?: string;
-  tempCountryCode?: string;
-  tempEmail?: string; 
 }
 
 const UserSchema: Schema = new Schema<IUser>({
   fname:{
     type: String,
     required: [true, 'First Name is Required'],
-    trim: true
-  },
-  mname:{
-    type: String,
     trim: true
   },
   lname:{
@@ -42,10 +35,6 @@ const UserSchema: Schema = new Schema<IUser>({
     required: [true, 'Please provide a phone number'],
     unique: true
   },
-  isPhoneVerified:{
-    type: Boolean,
-    default: false,
-  },
   email: {
     type: String,
     required: [true, 'Please provide an email'],
@@ -55,6 +44,10 @@ const UserSchema: Schema = new Schema<IUser>({
   isEmailVerified:{
     type: Boolean,
     default: false,
+  },
+  password:{
+    type: String,
+    required: [true, "Password is Required"]
   },
   dob:{
     type: Date,
@@ -92,9 +85,6 @@ const UserSchema: Schema = new Schema<IUser>({
     enum: ['individul', 'agent'],
     default: 'individual'
   },
-  tempEmail: { type: String },
-  tempPhone: { type: String },
-  tempCountryCode: { type: String },
 },
 {
   timestamps: true,

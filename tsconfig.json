@@ -43,8 +43,8 @@
          "@events/*": [
             "events/*"
          ],
-         "@services/*": [
-            "services/*"
+         "@utils/*": [
+            "utils/*"
          ]
       },
       "experimentalDecorators": true,
