@@ -32,10 +32,12 @@ export const UpdateUserDetails = async (req: Request, res: Response): Promise<an
 
     // Find user by ID
     const existingUser = await User.findById(userId);
-    if (!existingUser) {
+    if (!existingUser || existingUser.isDeleted) {
       return res.status(404).json({ message: "User not found." });
     }
-
+    if(existingUser.isBlocked === true){
+      return res.status(400).json({message: "You can not update Details. You are Blocked !"})
+    }
     // Validate email format if provided
     if (sanitizedEmail && !isValidEmail(sanitizedEmail)) {
       return res.status(400).json({ message: "Invalid email format." });

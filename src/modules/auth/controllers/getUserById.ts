@@ -13,7 +13,7 @@ export const getUserDetails = async (req: Request, res: Response): Promise<any> 
     // Fetch user details from the database
     const user = await User.findById(userId).select("-password -resetPasswordToken -resetPasswordTokenExpiry");
 
-    if (!user) {
+    if (!user || user.isBlocked === true || user.isDeleted === true) {
       return res.status(404).json({ success: false, message: "User not found." });
     }
 

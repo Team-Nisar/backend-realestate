@@ -65,9 +65,11 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     }
 
     // Check if user with the same email or phone already exists
-    const existingUser = await User.findOne({ $or: [{ email: sanitizedEmail }, { phone: sanitizedPhone }] });
+    const existingUser = await User.findOne({ $or: [{ email: sanitizedEmail }, { phone: sanitizedPhone }, {isDeleted: true}] });
     if (existingUser) {
-      return res.status(400).json({ message: "Email or phone number already registered." });
+      existingUser.isDeleted = false
+      await existingUser.save();
+      return res.status(400).json({ message: "Email or phone number already registered. Plese Login" });
     }
 
     // Hash the password

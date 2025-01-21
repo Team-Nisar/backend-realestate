@@ -1,5 +1,5 @@
 import express from "express";
-import {RegisterUser, loginUser, forgotPassword, resetPassword, getUserDetails, UpdateUserDetails} from '../controllers';
+import {RegisterUser, loginUser, forgotPassword, resetPassword, getUserDetails, UpdateUserDetails, changePassword, deleteUserById} from '../controllers';
 import { verifyToken } from "../../../middleware/verifyJWT";
 const router = express.Router();
 
@@ -14,5 +14,7 @@ router.post('/reset-password', resetPassword)
 router.use(verifyToken);
 router.get('/get-user', getUserDetails)
 router.patch('/update-details', UpdateUserDetails)
+router.patch('/change-password', changePassword)
+router.delete('/delete-user', deleteUserById)
 
 export default router;
