@@ -1,9 +1,10 @@
 import { Application, Request, Response } from "express";
-import { User } from "../../../models/user.model";
+import { IUser, User } from "../../../models/user.model";
 import bcrypt from 'bcrypt';
 import { isValidEmail } from "../../../utils/validEmail";
 import { isValidTenDigitMobile } from "../../../utils/validMobile";
 import sanitizeInput from '../../../utils/sanitizeInput';
+import { sendEmail } from "../../../services/email.service";
 
 // Register Controller
 export const RegisterUser = async (req: Request, res: Response): Promise<any> => {
@@ -16,6 +17,7 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
       email,
       password,
       confirmPassword,
+      WAMobile,
       dob,
       gender,
       address,
@@ -27,10 +29,11 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     const sanitizedLname = sanitizeInput(lname);
     const sanitizedEmail = sanitizeInput(email);
     const sanitizedPhone = sanitizeInput(phone);
+    const sanitizeWAMobile = sanitizeInput(WAMobile);
     const sanitizedDob = sanitizeInput(dob);
 
     // Check for missing fields
-    const requiredFields = { fname, lname, phone, email, password, confirmPassword, dob, gender };
+    const requiredFields = { fname, lname, phone, email, password, WAMobile ,confirmPassword, dob, gender };
     for (const [key, value] of Object.entries(requiredFields)) {
       if (!value || value.toString().trim() === "") {
         return res.status(400).json({ message: `${key} is required.` });
@@ -46,7 +49,10 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     if (!isValidTenDigitMobile(sanitizedPhone)) {
       return res.status(400).json({ message: "Invalid phone number format. It must be a 10-digit number." });
     }
-
+    //validate WhatsApp Mobile
+    if (!isValidTenDigitMobile(sanitizeWAMobile)) {
+      return res.status(400).json({ message: "Invalid WhatsApp number format. It must be a 10-digit number." });
+    }
     // Validate date of birth format
     const dobDate = new Date(sanitizedDob);
     if (isNaN(dobDate.getTime())) {
@@ -76,6 +82,7 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
       phone: sanitizedPhone,
       email: sanitizedEmail,
       password: hashedPassword,
+      WAMobile: sanitizeWAMobile,
       dob: dobDate,
       gender,
       address: address || [], // Default to empty array if no address is provided
@@ -84,10 +91,22 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
 
     // Save the user to the database
     await newUser.save();
-
-    return res.status(201).json({ message: "User registered successfully." });
+    const detailsUser: any = {
+      fname: newUser.fname,
+      lname: newUser.lname,
+      countryCode: newUser.countryCode,
+      phone: newUser.phone,
+      email: newUser.email,
+      WAMobile: newUser.WAMobile,
+      dob: newUser.dob,
+      gender: newUser.gender,
+      address: newUser.address,
+      role: newUser.role
+    };
+    await sendEmail(detailsUser);
+    return res.status(201).json({ Success: true, message: "User registered successfully." });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "An error occurred while registering the user.", error: error.message });
+    return res.status(500).json({ Success: false, message: "An error occurred while registering the user.", error: error.message });
   }
 };

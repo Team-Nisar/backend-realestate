@@ -15,38 +15,6 @@
          "src/@types",
          "node_modules/@types"
       ],
-      "paths": {
-         "@modules/*": [
-            "modules/*"
-         ],
-         "@models/*": [
-            "models/*"
-         ],
-         "@config": [
-            "core/config"
-         ],
-         "@core/*": [
-            "core/*"
-         ],
-         "@mail/*": [
-            "mails/*"
-         ],
-         "@middlewares/*": [
-            "middlewares/*"
-         ],
-         "@helpers/*": [
-            "helpers/*"
-         ],
-         "@jobs/*": [
-            "jobs/*"
-         ],
-         "@events/*": [
-            "events/*"
-         ],
-         "@utils/*": [
-            "utils/*"
-         ]
-      },
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
       "forceConsistentCasingInFileNames": true

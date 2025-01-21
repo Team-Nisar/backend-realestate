@@ -3,14 +3,12 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import cluster from "cluster";
 import os from "os";
+import rateLimit from "express-rate-limit";
 import { logger } from "./utils/logger"; // Import Winston logger
 import { ConnectDB } from "./core/config/db"; // Import your database connection logic
-import rateLimit from "express-rate-limit";
-import authRoutes from './auth.routes';
-import { requestLogger } from "./middleware/logMiddleware";
+import authRoutes from "./auth.routes"; // Routes for authentication
 
-// Get the number of available CPUs
-const numCPUs = os.cpus().length;
+const numCPUs = os.cpus().length; // Number of CPU cores
 const app = express();
 
 // Middleware: Body Parser
@@ -20,14 +18,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Middleware: CORS
 app.use(cors());
 
-// Load Balancing: Using Clustering
-if (cluster.isPrimary) {
-  let workers = numCPUs; // Default number of workers is equal to available CPUs
-  let workerLoad = 0; // Variable to track worker load
+// Function to dynamically manage workers
+const manageWorkers = () => {
+  let workers = numCPUs; // Default to the number of CPU cores
+  let workerLoad = 0; // Track worker load
 
   logger.info(`Primary process running. Forking ${workers} workers...`);
 
-  // Fork the initial number of workers
+  // Fork initial workers
   for (let i = 0; i < workers; i++) {
     cluster.fork();
   }
@@ -38,36 +36,50 @@ if (cluster.isPrimary) {
     cluster.fork();
   });
 
-  // Monitoring server load and adjusting workers dynamically
+  // Monitor load and adjust worker count dynamically
   setInterval(() => {
-    const currentLoad = os.loadavg()[0]; // Load average for the past 1 minute
+    const currentLoad = os.loadavg()[0]; // Get load average over the past 1 minute
 
-    // Increase the number of workers if the load exceeds a threshold
+    // Increase workers if load is high
     if (currentLoad > 1.5 && workers < numCPUs) {
       workers++;
       logger.info(`Increasing workers to ${workers}`);
-      cluster.fork(); // Spawn new worker
-    } else if (currentLoad < 0.7 && workers > 1) {
+      cluster.fork();
+    }
+
+    // Decrease workers if load is low
+    if (currentLoad < 0.7 && workers > 1) {
       workers--;
       logger.info(`Decreasing workers to ${workers}`);
-      const workerIds = Object.keys(cluster.workers);
-      const workerToKill = cluster.workers[workerIds[workerIds.length - 1]];
-      workerToKill.kill(); // Kill the last worker
+      const workerIds = Object.keys(cluster.workers || {});
+      const workerToKill = cluster.workers![workerIds[workerIds.length - 1]];
+      if (workerToKill) workerToKill.kill();
     }
   }, 5000); // Check load every 5 seconds
+};
 
+if (cluster.isPrimary) {
+  // Run the worker management function
+  manageWorkers();
 } else {
+  // Worker Process Logic
+
   // Connect to Database
-  ConnectDB();
+  ConnectDB()
+    .then(() => logger.info("Database connected successfully."))
+    .catch((err) => {
+      logger.error(`Database connection error: ${err.message}`);
+      process.exit(1); // Exit worker if DB connection fails
+    });
 
   // Middleware: Rate Limiting
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    max: 100, // Limit each IP to 100 requests per window
+    standardHeaders: true, // Include rate limit info in standard headers
+    legacyHeaders: false, // Disable legacy rate limit headers
     message: {
-      message: "Too many requests from this IP, please try again after 15 minutes.",
+      message: "Too many requests from this IP. Please try again after 15 minutes.",
     },
     handler: (req, res, next, options) => {
       logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
@@ -78,12 +90,12 @@ if (cluster.isPrimary) {
   // Apply rate limiter to all routes
   app.use(limiter);
 
-  // Routes
+  // Root Route
   app.get("/", (req: Request, res: Response) => {
     res.send("Welcome to the Real Estate API");
   });
-  app.use(requestLogger);
 
+  // Authentication Routes
   app.use("/api/v1/users", authRoutes);
 
   // Middleware: Error Handling
@@ -92,9 +104,9 @@ if (cluster.isPrimary) {
     res.status(500).json({ message: "An internal server error occurred." });
   });
 
-  // Start Server
+  // Start the Server
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
-    logger.info(`Worker ${process.pid} started. Server running on http://localhost:${PORT}`.bgBlue.black);
+    logger.info(`Worker ${process.pid} started. Server running on http://localhost:${PORT}`);
   });
 }
