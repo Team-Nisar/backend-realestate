@@ -6,13 +6,22 @@ export interface IUser extends Document{
   countryCode: string;
   phone: string;
   email: string;
-  isEmailVerified: boolean;
+  //isEmailVerified: boolean;
   password: string;
   WAMobile: string;
   dob: Date;
   gender: 'male' | 'female';
-  address?: [object];
+  address?: [
+    street: string,
+    area: string,
+    city: string,
+    zipcode: string,
+    state: string,
+    country: string,
+];
   role: 'individual' | 'agent';
+  resetPasswordToken?: string;
+  resetPasswordTokenExpiry?: Date;
 }
 
 const UserSchema: Schema = new Schema<IUser>({
@@ -41,13 +50,17 @@ const UserSchema: Schema = new Schema<IUser>({
     unique: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
   },
-  isEmailVerified:{
-    type: Boolean,
-    default: false,
-  },
+  // isEmailVerified:{
+  //   type: Boolean,
+  //   default: false,
+  // },
   password:{
     type: String,
     required: [true, "Password is Required"]
+  },
+  WAMobile:{
+    type: String,
+    required: [true, "WhatsApp Number is Required"]
   },
   dob:{
     type: Date,
@@ -82,9 +95,15 @@ const UserSchema: Schema = new Schema<IUser>({
     ],
   role: {
     type: String,
-    enum: ['individul', 'agent'],
+    enum: ['individual', 'agent'],
     default: 'individual'
   },
+  resetPasswordToken:{
+    type: String
+  },
+  resetPasswordTokenExpiry:{
+    type: Date
+  }
 },
 {
   timestamps: true,

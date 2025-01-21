@@ -1,13 +1,13 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { NextFunction, Request, Response } from 'express';
-import { User } from '@models/user.model';
+import { User } from '../models/user.model';
 
 interface JWTPayload{
    _id: string;
    role: string
 }
 
-export const verifyToken = async(req: Request, res: Response, next: NextFunction) => {
+export const verifyToken = async(req: Request, res: Response, next: NextFunction): Promise<any> => {
    try {
       const token = req.headers?.authorization?.split(' ')[1];
       if(!token){
