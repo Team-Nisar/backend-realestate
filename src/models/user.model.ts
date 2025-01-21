@@ -22,6 +22,8 @@ export interface IUser extends Document{
   role: 'individual' | 'agent';
   resetPasswordToken?: string;
   resetPasswordTokenExpiry?: Date;
+  isDeleted: boolean;
+  isBlocked: boolean;
 }
 
 const UserSchema: Schema = new Schema<IUser>({
@@ -103,6 +105,14 @@ const UserSchema: Schema = new Schema<IUser>({
   },
   resetPasswordTokenExpiry:{
     type: Date
+  },
+  isDeleted:{
+    type: Boolean,
+    default: false
+  },
+  isBlocked: {
+    type: Boolean,
+    default: false
   }
 },
 {
