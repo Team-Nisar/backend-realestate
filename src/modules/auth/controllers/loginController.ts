@@ -24,7 +24,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     }
 
     // Find the user by email
-    const user = await User.findOne({ email: sanitizedEmail });
+    const user = await User.findOne({ email: sanitizedEmail }).select("-password -resetPasswordToken -resetPasswordTokenExpiry");
     if (!user || user.isDeleted === true) {
       return res.status(404).json({ message: "User not found." });
     }
@@ -44,8 +44,16 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
       }
     // Generate a JWT token
     const token = generate_token(payload);
-
-    return res.status(200).json({Success: true, message: "Login successful.", token });
+    const options = {
+      expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+    }
+    return res.cookie("token", token, options).status(200).json({
+      Success: true, 
+      message: "Login Successful.", 
+      token, 
+      user
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ Success: false, message: "An error occurred while logging in.", error: error.message });
