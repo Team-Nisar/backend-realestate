@@ -20,7 +20,12 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
       WAMobile,
       dob,
       gender,
-      address,
+      street,
+      area,
+      city,
+      zipcode,
+      state,
+      country,
       role,
     } = req.body;
 
@@ -29,7 +34,7 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     const sanitizedLname = sanitizeInput(lname);
     const sanitizedEmail = sanitizeInput(email);
     const sanitizedPhone = sanitizeInput(phone);
-    const sanitizeWAMobile = sanitizeInput(WAMobile);
+    const sanitizedWAMobile = sanitizeInput(WAMobile);
     const sanitizedDob = sanitizeInput(dob);
 
     // Check for missing fields
@@ -49,10 +54,12 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     if (!isValidTenDigitMobile(sanitizedPhone)) {
       return res.status(400).json({ message: "Invalid phone number format. It must be a 10-digit number." });
     }
-    //validate WhatsApp Mobile
-    if (!isValidTenDigitMobile(sanitizeWAMobile)) {
+
+    // Validate WhatsApp Mobile
+    if (!isValidTenDigitMobile(sanitizedWAMobile)) {
       return res.status(400).json({ message: "Invalid WhatsApp number format. It must be a 10-digit number." });
     }
+
     // Validate date of birth format
     const dobDate = new Date(sanitizedDob);
     if (isNaN(dobDate.getTime())) {
@@ -65,11 +72,9 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     }
 
     // Check if user with the same email or phone already exists
-    const existingUser = await User.findOne({ $or: [{ email: sanitizedEmail }, { phone: sanitizedPhone }, {isDeleted: true}] });
+    const existingUser = await User.findOne({ $or: [{ email: sanitizedEmail }, { phone: sanitizedPhone }] });
     if (existingUser) {
-      existingUser.isDeleted = false
-      await existingUser.save();
-      return res.status(400).json({ message: "Email or phone number already registered. Plese Login" });
+      return res.status(400).json({ message: "Email or phone number already registered. Please Login." });
     }
 
     // Hash the password
@@ -84,15 +89,26 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
       phone: sanitizedPhone,
       email: sanitizedEmail,
       password: hashedPassword,
-      WAMobile: sanitizeWAMobile,
+      WAMobile: sanitizedWAMobile,
       dob: dobDate,
       gender,
-      address: address || [], // Default to empty array if no address is provided
+      address: [
+        {
+          street: street ? sanitizeInput(street) : undefined,
+          area: area ? sanitizeInput(area) : undefined,
+          city: city ? sanitizeInput(city) : undefined,
+          zipcode: zipcode ? sanitizeInput(zipcode) : undefined,
+          state: state ? sanitizeInput(state) : undefined,
+          country: country ? sanitizeInput(country) : undefined,
+        }
+      ], // Address should be an array of objects
       role: role || "individual", // Default to 'individual'
     });
 
     // Save the user to the database
     await newUser.save();
+
+    // Prepare details for email
     const detailsUser: any = {
       fname: newUser.fname,
       lname: newUser.lname,
@@ -105,7 +121,10 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
       address: newUser.address,
       role: newUser.role
     };
+
+    // Send email confirmation
     await sendEmail(detailsUser);
+
     return res.status(201).json({ Success: true, message: "User registered successfully." });
   } catch (error) {
     console.error(error);

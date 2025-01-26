@@ -18,8 +18,12 @@ export const UpdateUserDetails = async (req: Request, res: Response): Promise<an
       WAMobile,
       dob,
       gender,
-      address,
-      role,
+      street,
+      area,
+      city,
+      zipcode,
+      state,
+      country,
     } = req.body;
 
     // Sanitize inputs
@@ -35,9 +39,10 @@ export const UpdateUserDetails = async (req: Request, res: Response): Promise<an
     if (!existingUser || existingUser.isDeleted) {
       return res.status(404).json({ message: "User not found." });
     }
-    if(existingUser.isBlocked === true){
-      return res.status(400).json({message: "You can not update Details. You are Blocked !"})
+    if (existingUser.isBlocked) {
+      return res.status(400).json({ message: "You cannot update details. You are blocked!" });
     }
+
     // Validate email format if provided
     if (sanitizedEmail && !isValidEmail(sanitizedEmail)) {
       return res.status(400).json({ message: "Invalid email format." });
@@ -84,11 +89,23 @@ export const UpdateUserDetails = async (req: Request, res: Response): Promise<an
     if (sanitizedWAMobile) existingUser.WAMobile = sanitizedWAMobile;
     if (sanitizedDob) existingUser.dob = new Date(sanitizedDob);
     if (gender) existingUser.gender = gender;
-    if (address) existingUser.address = address;
-    if (role) existingUser.role = role;
+    
+    // Update address if provided (handling address as an array of objects)
+    if (street || area || city || zipcode || state || country) {
+      existingUser.address = [{
+        street: street ? sanitizeInput(street) : undefined,
+        area: area ? sanitizeInput(area) : undefined,
+        city: city ? sanitizeInput(city) : undefined,
+        zipcode: zipcode ? sanitizeInput(zipcode) : undefined,
+        state: state ? sanitizeInput(state) : undefined,
+        country: country ? sanitizeInput(country) : undefined,
+      }];
+    }
 
     // Save the updated user to the database
     await existingUser.save();
+
+    // Prepare updated user details
     const updatedUserDetails: any = {
       fname: existingUser.fname,
       lname: existingUser.lname,
@@ -104,6 +121,7 @@ export const UpdateUserDetails = async (req: Request, res: Response): Promise<an
 
     // Send email confirmation for update
     await sendUpdateEmail(updatedUserDetails);
+
     return res.status(200).json({ Success: true, message: "User details updated successfully." });
   } catch (error) {
     console.error(error);
