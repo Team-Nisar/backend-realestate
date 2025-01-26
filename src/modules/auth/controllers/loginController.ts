@@ -24,7 +24,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     }
 
     // Find the user by email
-    const user = await User.findOne({ email: sanitizedEmail }).select("-password -resetPasswordToken -resetPasswordTokenExpiry");
+    const user = await User.findOne({ email: sanitizedEmail });
     if (!user || user.isDeleted === true) {
       return res.status(404).json({ message: "User not found." });
     }
