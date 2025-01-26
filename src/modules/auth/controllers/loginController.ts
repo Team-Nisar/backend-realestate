@@ -52,7 +52,17 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
       Success: true, 
       message: "Login Successful.", 
       token, 
-      user
+      user:{
+        _id: user._id,
+        fname: user.fname,
+        lname: user.lname,
+        email: user.email,
+        countryCode: user.countryCode,
+        phone: user.phone,
+        WAMobile: user.WAMobile,
+        gender: user.gender,
+        role: user.role
+      }
     });
   } catch (error) {
     console.error(error);
