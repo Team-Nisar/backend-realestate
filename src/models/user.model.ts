@@ -9,7 +9,7 @@ export interface IUser extends Document {
   password: string;
   WAMobile: string;
   dob: Date;
-  gender: 'male' | 'female';
+  gender: 'male' | 'female'| 'other';
   address?: [{
     street?: string;
     area?: string;
@@ -51,7 +51,7 @@ const UserSchema: Schema = new Schema<IUser>(
         country: { type: String },
       },
     ],
-    role: { type: String, enum: ['individual', 'agent'], default: 'individual' },
+    role: { type: String, enum: ['individual', 'agent', 'other'], default: 'individual' },
     resetPasswordToken: { type: String },
     resetPasswordTokenExpiry: { type: Date },
     isDeleted: { type: Boolean, default: false },
