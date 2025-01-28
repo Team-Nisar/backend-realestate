@@ -40,7 +40,7 @@ const UserSchema: Schema = new Schema<IUser>(
     password: { type: String, required: true },
     WAMobile: { type: String, required: true },
     dob: { type: Date, required: true },
-    gender: { type: String, enum: ['male', 'female'], default: 'male' },
+    gender: { type: String, enum: ['male', 'female', 'other'], default: 'male' },
     address: [
       {
         street: { type: String },
@@ -51,7 +51,7 @@ const UserSchema: Schema = new Schema<IUser>(
         country: { type: String },
       },
     ],
-    role: { type: String, enum: ['individual', 'agent', 'other'], default: 'individual' },
+    role: { type: String, enum: ['individual', 'agent'], default: 'individual' },
     resetPasswordToken: { type: String },
     resetPasswordTokenExpiry: { type: Date },
     isDeleted: { type: Boolean, default: false },
