@@ -65,7 +65,9 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     if (isNaN(dobDate.getTime())) {
       return res.status(400).json({ message: "Invalid date of birth format." });
     }
-
+    if(password.length < 6 || confirmPassword.length < 6){
+      return res.status(400).json({message: "Password must greater than 6 character !"})
+    }
     // Validate password and confirmPassword match
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match." });

@@ -35,7 +35,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     // Compare the provided password with the hashed password
     const isMatch = await bcrypt.compare(sanitizedPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials." });
+      return res.status(400).json({ message: "Invalid Password." });
     }
 
     const payload = {
