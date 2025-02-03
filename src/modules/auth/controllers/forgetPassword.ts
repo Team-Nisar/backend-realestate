@@ -11,7 +11,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<any> 
     // Check if user exists with the provided email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ error: 'No account exists with the provided email address.' });
+      return res.status(400).json({ message: 'No account exists with the provided email address.' });
     }
 
     // Generate a token valid for 5 minutes
@@ -39,6 +39,6 @@ export const forgotPassword = async (req: Request, res: Response): Promise<any> 
       },
     });
   } catch (error) {
-    return res.status(500).json({ Success: false, error: error.message });
+    return res.status(500).json({ Success: false, message: "Somthing went wrong", error: error.message });
   }
 };
