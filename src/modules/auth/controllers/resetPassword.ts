@@ -6,8 +6,8 @@ import crypto from 'crypto'
 
 export const resetPassword = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { token } = req.query;
-    const { newPassword } = req.body;
+    // const { token } = req.query;
+    const { newPassword, token } = req.body;
 
     if (!token || !newPassword) {
       return res.status(400).json({ error: 'Token and new password are required.' });

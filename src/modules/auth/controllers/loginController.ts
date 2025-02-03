@@ -25,6 +25,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
 
     // Find the user by email
     const user = await User.findOne({ email: sanitizedEmail });
+    console.log(user)
     if (!user || user.isDeleted === true) {
       return res.status(404).json({ message: "User not found." });
     }
@@ -61,7 +62,15 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
         phone: user.phone,
         WAMobile: user.WAMobile,
         gender: user.gender,
-        role: user.role
+        role: user.role,
+        DOB:user.dob,
+        street:user.address[0].street,
+        area:user.address[0].area,
+        city:user.address[0].city,
+        zipcode:user.address[0].zipcode,
+        state:user.address[0].state,
+        country:user.address[0].country,
+
       }
     });
   } catch (error) {
