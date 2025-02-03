@@ -1,5 +1,5 @@
 import { Application, Request, Response } from "express";
-import { IUser, User } from "../../../models/user.model";
+import {Admin } from "../../../models/admin.model";
 import bcrypt from 'bcrypt';
 import { isValidEmail } from "../../../utils/validEmail";
 import { isValidTenDigitMobile } from "../../../utils/validMobile";
@@ -7,7 +7,7 @@ import sanitizeInput from '../../../utils/sanitizeInput';
 import { sendEmail } from "../../../services/email.service";
 
 // Register Controller
-export const RegisterUser = async (req: Request, res: Response): Promise<any> => {
+export const RegisterAdmin = async (req: Request, res: Response): Promise<any> => {
   try {
     const {
       fname,
@@ -65,16 +65,14 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     if (isNaN(dobDate.getTime())) {
       return res.status(400).json({ message: "Invalid date of birth format." });
     }
-    if(password.length < 6 || confirmPassword.length < 6){
-      return res.status(400).json({message: "Password must greater than 6 character !"})
-    }
+
     // Validate password and confirmPassword match
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match." });
     }
 
     // Check if user with the same email or phone already exists
-    const existingUser = await User.findOne({ $or: [{ email: sanitizedEmail }, { phone: sanitizedPhone }] });
+    const existingUser = await Admin.findOne({ $or: [{ email: sanitizedEmail }, { phone: sanitizedPhone }] });
     if (existingUser) {
       return res.status(400).json({ message: "Email or phone number already registered. Please Login." });
     }
@@ -84,7 +82,7 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create the new user object
-    const newUser = new User({
+    const newUser = new Admin({
       fname: sanitizedFname,
       lname: sanitizedLname,
       countryCode: countryCode || "+91", // Default to '+91'
@@ -104,7 +102,7 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
           country: country ? sanitizeInput(country) : undefined,
         }
       ], // Address should be an array of objects
-      role: role || "individual", // Default to 'individual'
+      role: role || "manager", // Default to 'manager'
     });
 
     // Save the user to the database
@@ -127,9 +125,9 @@ export const RegisterUser = async (req: Request, res: Response): Promise<any> =>
     // Send email confirmation
     await sendEmail(detailsUser);
 
-    return res.status(201).json({ Success: true, message: "User registered successfully." });
+    return res.status(201).json({ Success: true, message: "Admin registered successfully." });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ Success: false, message: "An error occurred while registering the user.", error: error.message });
+    return res.status(500).json({ Success: false, message: "An error occurred while registering the Admin.", error: error.message });
   }
 };

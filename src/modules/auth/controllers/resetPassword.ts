@@ -12,7 +12,9 @@ export const resetPassword = async (req: Request, res: Response): Promise<any> =
     if (!token || !newPassword) {
       return res.status(400).json({ error: 'Token and new password are required.' });
     }
-
+    if(newPassword.length < 6){
+      return res.status(400).json({message: "Password must greater than 6 character !"})
+    }
     const hashedToken = crypto.createHash('sha256').update(token.toString()).digest('hex');
 
     const user = await User.findOne({

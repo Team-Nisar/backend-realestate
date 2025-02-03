@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 
-export interface IUser extends Document {
+export interface IAdmin extends Document {
   fname: string;
   lname: string;
   countryCode: string;
@@ -18,14 +18,14 @@ export interface IUser extends Document {
     state?: string;
     country?: string;
   }];
-  role: 'individual' | 'agent';
+  role: 'admin' | 'manager';
   resetPasswordToken?: string;
   resetPasswordTokenExpiry?: Date;
   isDeleted: boolean;
   isBlocked: boolean;
 }
 
-const UserSchema: Schema = new Schema<IUser>(
+const AdminSchema: Schema = new Schema<IAdmin>(
   {
     fname: { type: String, required: true, trim: true },
     lname: { type: String, required: true, trim: true },
@@ -51,7 +51,7 @@ const UserSchema: Schema = new Schema<IUser>(
         country: { type: String },
       },
     ],
-    role: { type: String, enum: ['individual', 'agent'], default: 'individual' },
+    role: { type: String, enum: ['admin', 'manager'], default: 'manager' },
     resetPasswordToken: { type: String },
     resetPasswordTokenExpiry: { type: Date },
     isDeleted: { type: Boolean, default: false },
@@ -63,4 +63,4 @@ const UserSchema: Schema = new Schema<IUser>(
   }
 );
 
-export const User = model<IUser>("user", UserSchema);
+export const Admin = model<IAdmin>("admin", AdminSchema);

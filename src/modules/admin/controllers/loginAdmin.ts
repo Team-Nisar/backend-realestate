@@ -1,11 +1,11 @@
 import {Request, Response} from 'express';
-import { User } from '../../../models/user.model';
+import { Admin } from '../../../models/admin.model';
 import { generate_token } from '../../../helpers/jwtHelper';
 import bcrypt from 'bcrypt';
 import { isValidEmail } from '../../../utils/validEmail';
 import sanitizeInput from '../../../utils/sanitizeInput';
 
-export const loginUser = async (req: Request, res: Response): Promise<any> => {
+export const loginAdmin = async (req: Request, res: Response): Promise<any> => {
   try {
     const { email, password } = req.body;
 
@@ -24,10 +24,9 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     }
 
     // Find the user by email
-    const user = await User.findOne({ email: sanitizedEmail });
-    console.log(user)
+    const user = await Admin.findOne({ email: sanitizedEmail });
     if (!user || user.isDeleted === true) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ message: "Manager not found." });
     }
     if(user.isBlocked === true){
       return res.status(400).json({message: "You can not login, because you are Blocked !"})
@@ -36,7 +35,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     // Compare the provided password with the hashed password
     const isMatch = await bcrypt.compare(sanitizedPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid Password." });
+      return res.status(400).json({ message: "Invalid credentials." });
     }
 
     const payload = {
@@ -62,15 +61,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
         phone: user.phone,
         WAMobile: user.WAMobile,
         gender: user.gender,
-        role: user.role,
-        DOB:user.dob,
-        street:user.address[0].street,
-        area:user.address[0].area,
-        city:user.address[0].city,
-        zipcode:user.address[0].zipcode,
-        state:user.address[0].state,
-        country:user.address[0].country,
-
+        role: user.role
       }
     });
   } catch (error) {

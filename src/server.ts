@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import { logger } from "./utils/logger"; // Import Winston logger
 import { ConnectDB } from "./core/config/db"; // Import your database connection logic
 import authRoutes from "./auth.routes"; // Routes for authentication
+import path from "path";
 
 const numCPUs = os.cpus().length; // Number of CPU cores
 const app = express();
@@ -90,13 +91,18 @@ if (cluster.isPrimary) {
   // Apply rate limiter to all routes
   app.use(limiter);
 
+  app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
   // Root Route
   app.get("/", (req: Request, res: Response) => {
     res.send("Welcome to the Real Estate API");
   });
 
   // Authentication Routes
-  app.use("/api/v1/users", authRoutes);
+  app.use("/api/v1", authRoutes);
+  app.use("/upload", ()=>{
+
+  })
 
   // Middleware: Error Handling
   app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
