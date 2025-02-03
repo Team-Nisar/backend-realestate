@@ -5,10 +5,10 @@ import { getActiveResourcesInfo } from "process";
 
 interface JWTPayload extends JwtPayload {
    _id: string;
-   role: string;
+   role: "admin" | "manager";
 }
 
-// Middleware to verify token and check if user is admin
+// Middleware to verify token and check if user is admin or manager
 export const verifyAdmin = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
    try {
       const token = req.headers?.authorization?.split(" ")[1];
@@ -24,8 +24,13 @@ export const verifyAdmin = async (req: Request, res: Response, next: NextFunctio
          return res.status(401).json({ message: "Unauthorized. User not found." });
       }
 
-      if (user.role !== "admin" || user.role !== 'manager') {
-         return res.status(403).json({ message: "Forbidden. Admin access only." });
+      if (user.isDeleted || user.isBlocked) {
+         return res.status(403).json({ message: "Forbidden. This account is either deleted or blocked." });
+      }
+
+      
+      if (!["admin", "manager"].includes(user.role)) {
+         return res.status(403).json({ message: "Forbidden. Only admins and managers can access this." });
       }
 
       req.user = user; // Attach user to request object
