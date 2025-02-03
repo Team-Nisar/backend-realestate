@@ -27,6 +27,7 @@ export const verifyAdmin = async (req: Request, res: Response, next: NextFunctio
          return res.status(403).json({ message: "Forbidden. This account is either deleted or blocked." });
       }
 
+      
       if (!["admin", "manager"].includes(user.role)) {
          return res.status(403).json({ message: "Forbidden. Only admins and managers can access this." });
       }
