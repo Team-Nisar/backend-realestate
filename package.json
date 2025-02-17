@@ -46,6 +46,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
+    "firebase-admin": "^13.1.0",
     "fs": "^0.0.1-security",
     "globals": "^15.14.0",
     "gridfs-stream": "^1.1.1",
