@@ -25,7 +25,6 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
 
     // Find the user by email
     const user = await User.findOne({ email: sanitizedEmail });
-    console.log(user)
     if (!user || user.isDeleted === true) {
       return res.status(404).json({ message: "User not found." });
     }
